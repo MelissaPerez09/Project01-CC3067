@@ -2,6 +2,7 @@ import { useState } from 'react'
 import plainLogo from '../assets/logo.png'
 import '../index.css'
 import './Login.css'
+import { connect } from '../backend/xmpp'
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -9,8 +10,14 @@ function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Username:', username);
-    console.log('Password:', password);
+    const jid = `${username}@alumchat.lol`;
+    
+    connect(jid, password, () => {
+      console.log('Connected successfully');
+      navigate('/profile');
+    }, (msg) => {
+      console.log('Message received:', msg);
+    });
   };
 
   return (
@@ -38,7 +45,7 @@ function Login() {
             required
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit" onClick={handleSubmit}>Login</button>
       </form>
       <p className="signin">Don't have an account?<a href="/signup">Sign up</a></p>
     </div>

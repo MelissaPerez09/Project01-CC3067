@@ -2,6 +2,7 @@ import { useState } from 'react'
 import plainLogo from '../assets/logo1.png'
 import '../index.css'
 import './SignUp.css'
+import { connect } from '../backend/xmpp'
 
 function SignUp() {
     const [fullname, setFullname] = useState('');
@@ -10,9 +11,17 @@ function SignUp() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log('Signing up with Fullname:', fullname);
-        console.log('Signing up with Username:', username);
+        const jid = `${username}@alumchat.lol`;
+        console.log('Full name:', fullname);
+        console.log('Username:', username);
         console.log('Password:', password);
+    
+        connect(jid, password, () => {
+            console.log('Account created and connected successfully');
+            navigate('/profile');
+        }, (msg) => {
+            console.log('Message received:', msg);
+        });
     };
 
     return (
@@ -25,7 +34,7 @@ function SignUp() {
             <input
                 type="text"
                 id="fullname"
-                value={username}
+                value={fullname}
                 onChange={(e) => setFullname(e.target.value)}
                 required
             />
@@ -50,7 +59,7 @@ function SignUp() {
                 required
             />
         </div>
-        <button type="submit">Sign Up</button>
+        <button type="submit" onClick={handleSubmit}>Sign Up</button>
         </form>
         <p className="signin">Already have an account?<a href="/">Log in</a></p>
         </div>

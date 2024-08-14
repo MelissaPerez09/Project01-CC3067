@@ -2,7 +2,6 @@ import { useState } from 'react'
 import plainLogo from '../assets/logo1.png'
 import '../index.css'
 import './SignUp.css'
-import { connect } from '../backend/xmpp'
 
 function SignUp() {
     const [fullname, setFullname] = useState('');

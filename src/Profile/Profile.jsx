@@ -4,7 +4,6 @@ import { IoPersonAdd } from "react-icons/io5"
 import { IoIosChatbubbles } from "react-icons/io"
 import { TbHttpDelete } from "react-icons/tb"
 import { useState } from 'react'
-import { connect } from '../backend/xmpp'
 import '../index.css'
 import './Profile.css'
 

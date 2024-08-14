@@ -8,5 +8,8 @@ export default defineConfig({
     alias: {
       'strophe.js': 'strophe.js'
     }
+  },
+  define: {
+    global: 'globalThis',
   }
 })

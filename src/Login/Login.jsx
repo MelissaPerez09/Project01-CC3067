@@ -1,8 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import plainLogo from '../assets/logo.png'
 import '../index.css'
 import './Login.css'
-import { connect } from '../backend/xmpp'
+import connectXMPP from '../backend/connect'
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -10,13 +11,22 @@ function Login() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const jid = `${username}@alumchat.lol`;
-    
-    connect(jid, password, () => {
+
+    const xmpp = connectXMPP(username, password);
+
+    // Maneja los eventos de conexión y mensajes
+    xmpp.on('online', () => {
       console.log('Connected successfully');
-      navigate('/profile');
-    }, (msg) => {
-      console.log('Message received:', msg);
+      //navigate('/profile');
+    });
+
+    xmpp.on('stanza', (msg) => {
+      //console.log('Message received:', msg);
+      // Maneja los mensajes recibidos aquí
+    });
+
+    xmpp.start().catch((err) => {
+      console.error('Failed to connect:', err);
     });
   };
 
@@ -45,7 +55,7 @@ function Login() {
             required
           />
         </div>
-        <button type="submit" onClick={handleSubmit}>Login</button>
+        <button type="submit">Login</button>
       </form>
       <p className="signin">Don't have an account?<a href="/signup">Sign up</a></p>
     </div>

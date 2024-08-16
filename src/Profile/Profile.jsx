@@ -3,15 +3,22 @@ import { MdLogout } from "react-icons/md";
 import { IoPersonAdd } from "react-icons/io5"
 import { IoIosChatbubbles } from "react-icons/io"
 import { TbHttpDelete } from "react-icons/tb"
+import { Link } from 'react-router-dom';
 import { useState } from 'react'
 import '../index.css'
 import './Profile.css'
 
 function Profile() {
+        const handleContactClick = (contactId) => {
+        history.push(`/usersinfo/${contactId}`);
+    };
 
     return (
         <div className="Profile">
-            <button className="LogoutButton"><MdLogout /></button>
+            <Link to="/" className="LogoutButton">
+                <button><MdLogout /></button>
+            </Link>
+            
             <div className="username">
                 <FaUserCircle size={60} /> 
                 <h1>@username</h1>
@@ -37,13 +44,19 @@ function Profile() {
 
             <div className="Menu">
                 <div className="MenuItem">
-                    <button className="MenuButton" title="Add Contact"><IoPersonAdd /></button>
+                    <Link to="/users">
+                        <button className="MenuButton" title="Add Contact"><IoPersonAdd /></button>
+                    </Link>
                 </div>
                 <div className="MenuItem">
-                    <button className="MenuButton" title="Chat Room"><IoIosChatbubbles /></button>
+                    <Link to="/chat-room">
+                        <button className="MenuButton" title="Chat Room"><IoIosChatbubbles /></button>
+                    </Link>
                 </div>
                 <div className="MenuItem">
-                    <button className="MenuButton" title="Delete Account"><TbHttpDelete /></button>
+                    <Link to="/delete-account">
+                        <button className="MenuButton" title="Delete Account"><TbHttpDelete /></button>
+                    </Link>
                 </div>
             </div>
         </div>

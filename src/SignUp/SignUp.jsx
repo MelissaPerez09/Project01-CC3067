@@ -25,7 +25,7 @@ function SignUp() {
             fullname,
             () => {
                 console.log('Account created successfully');
-                navigate('/profile', { state: { username } });
+                navigate('/');
             },
             (err) => {
                 console.error('Failed to register account:', err);

@@ -6,6 +6,7 @@ import { IoIosChatbubbles } from "react-icons/io"
 import { TbHttpDelete } from "react-icons/tb"
 import { Link, useNavigate } from 'react-router-dom'
 import getRoster from '../backend/getRoster'
+import deleteAccount from '../backend/deleteAccount'
 import '../index.css'
 import './Profile.css'
 
@@ -49,6 +50,17 @@ function Profile() {
         navigate('/'); // Redirigir a la página de inicio de sesión
     };
 
+    const handleDeleteAccount = () => {
+        deleteAccount(() => {
+            console.log("Account deleted successfully");
+            localStorage.removeItem('xmppUsername');
+            localStorage.removeItem('xmppPassword');
+            navigate('/'); // Redirigir a la página de inicio de sesión
+        }, (error) => {
+            console.error("Failed to delete account:", error);
+        });
+    };
+
     const handleContactClick = (contactId) => {
         // Navigate to contact details
     };
@@ -88,9 +100,7 @@ function Profile() {
                     </Link>
                 </div>
                 <div className="MenuItem">
-                    <Link to="/delete-account">
-                        <button className="MenuButton" title="Delete Account"><TbHttpDelete /></button>
-                    </Link>
+                    <button className="MenuButton" title="Delete Account" onClick={handleDeleteAccount}><TbHttpDelete /></button>
                 </div>
             </div>
         </div>

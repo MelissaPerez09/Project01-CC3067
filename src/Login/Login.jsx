@@ -8,26 +8,28 @@ import connectXMPP from '../backend/connect'
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const xmpp = connectXMPP(username, password);
 
-    // Maneja los eventos de conexión y mensajes
     xmpp.on('online', () => {
-      console.log('Connected successfully');
-      //navigate('/profile');
+        console.log('Connected successfully');
+        navigate('/profile', { state: { username: username } }); 
     });
 
     xmpp.on('stanza', (msg) => {
-      //console.log('Message received:', msg);
-      // Maneja los mensajes recibidos aquí
+        console.log('Message received:', msg);
+        // Handle incoming messages here
     });
 
-    xmpp.start().catch((err) => {
-      console.error('Failed to connect:', err);
-    });
+    if (xmpp.status !== 'online' && xmpp.status !== 'connecting') {
+        xmpp.start().catch((err) => {
+            console.error('Failed to connect:', err);
+        });
+    }
   };
 
   return (

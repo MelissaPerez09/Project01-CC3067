@@ -1,4 +1,4 @@
-import { client, xml } from '@xmpp/client/browser';
+import { client, xml } from '@xmpp/client';
 
 function connectXMPP(username, password) {
     const xmpp = client({
@@ -6,10 +6,10 @@ function connectXMPP(username, password) {
         domain: 'alumchat.lol',
         resource: '',
         username: username,
-        password: password
+        password: password,
     });
 
-    xmpp.on('online', async address => {
+    xmpp.on('online', async (address) => {
         console.log(`connected to alumchat.lol as ${address.toString()}`);
     });
 
@@ -17,9 +17,11 @@ function connectXMPP(username, password) {
         console.error('Failed to connect:', err);
     });
 
-    xmpp.start().catch((err) => {
-        console.error('Connection error:', err);
-    });
+    if (xmpp.status !== 'online' && xmpp.status !== 'connecting') {
+        xmpp.start().catch((err) => {
+            console.error('Connection error:', err);
+        });
+    }
 
     return xmpp;
 }

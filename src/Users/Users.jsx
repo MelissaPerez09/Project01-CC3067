@@ -2,36 +2,54 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../index.css';
 import './Users.css';
-import connectXMPP from '../backend/connect';
+import addContact from '../backend/addUser';
 
 function Users() {
     const [searchTerm, setSearchTerm] = useState('');
-    const users = ['username1', 'username2', 'username3', 'username4'];
+    const [email, setEmail] = useState('');
+    const [name, setName] = useState('');
+    const [users, setUsers] = useState(['username1', 'username2', 'username3', 'username4']);
+    const navigate = useNavigate();
 
     const filteredUsers = users.filter(user =>
         user.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const handleAddContact = () => {
+        if (email) {
+            addContact(email, name, 
+                () => {
+                    console.log("Contact added successfully!");
+                    // Optionally, navigate back to profile or show a success message
+                    navigate('/profile');
+                },
+                (error) => {
+                    console.error("Failed to add contact:", error);
+                }
+            );
+        } else {
+            console.error("Email (JID) is required to add a contact");
+        }
+    };
+
     return (
         <div className="add-contacts-container">
             <a href="/profile"> 👤 Back to profile</a>
-            <h2>More Users</h2>
-            <div className="search-bar">
+            <h2>Add contact</h2>
+            <div className="manual-add">
                 <input 
                     type="text" 
-                    placeholder="Search..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Enter email (JID)" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                 />
-                <button className="search-button">🔍</button>
-            </div>
-            <div className="user-grid">
-                {filteredUsers.map((user, index) => (
-                    <div key={index} className="user-card">
-                        <p>{user}</p>
-                        <button className="add-button">Add</button>
-                    </div>
-                ))}
+                <input 
+                    type="text" 
+                    placeholder="Enter name (optional)" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                />
+                <button className="add-button" onClick={handleAddContact}>Add Contact</button>
             </div>
         </div>      
     );

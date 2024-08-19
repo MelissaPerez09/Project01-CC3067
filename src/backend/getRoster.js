@@ -55,15 +55,17 @@ async function fetchContacts(xmppClient) {
             if (stanza.is('iq') && stanza.getChild('query')) {
                 const items = stanza.getChild('query').getChildren('item');
 
-                contacts = items.filter(item => {
+                contacts = items.map(item => {
                     const subscription = item.attrs.subscription;
-                    return subscription === 'both' || subscription === 'from' || subscription === 'to';
-                }).map(item => ({
-                    jid: item.attrs.jid,
-                    name: item.attrs.name || item.attrs.jid.split('@')[0],
-                    state: "disconnected", // State will be updated by presence
-                    imageUrl: 'http://imgfz.com/i/9gODMzi.png'
-                }));
+                    console.log(`Contact: ${item.attrs.jid}, Subscription: ${subscription}`);
+                    return {
+                        jid: item.attrs.jid,
+                        name: item.attrs.name || item.attrs.jid.split('@')[0],
+                        subscription: subscription,
+                        state: "disconnected", // State will be updated by presence
+                        imageUrl: 'http://imgfz.com/i/9gODMzi.png'
+                    };
+                });
 
                 for (let contact of contacts) {
                     const probe = xml(

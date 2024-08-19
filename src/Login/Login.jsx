@@ -17,7 +17,13 @@ function Login() {
 
     xmpp.on('online', () => {
         console.log('Connected successfully');
-        navigate('/profile', { state: { username: username } }); 
+
+        // Store username and password in localStorage
+        localStorage.setItem('xmppUsername', username);
+        localStorage.setItem('xmppPassword', password);
+
+        // Navigate to the profile page
+        navigate('/profile'); 
     });
 
     xmpp.on('stanza', (msg) => {

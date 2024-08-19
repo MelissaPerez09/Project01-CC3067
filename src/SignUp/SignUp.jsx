@@ -1,30 +1,37 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import plainLogo from '../assets/logo1.png';
 import '../index.css';
 import './SignUp.css';
-import registerXMPP from '../backend/register';
+import registerNewUser from '../backend/register';
 
 function SignUp() {
     const [fullname, setFullname] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const jid = `${username}@alumchat.lol`;
 
-        console.log('Full name:', fullname);
-        console.log('Username:', username);
-        console.log('Password:', password);
+        const existingUsername = 'per21385';
+        const existingPassword = '12345';
 
-        // Llamar a la función de registro
-        registerXMPP(username, password, fullname, () => {
-            console.log('Account created and connected successfully');
-            // Aquí podrías redirigir al usuario a la página de perfil
-            // navigate('/profile');
-        }, (err) => {
-            console.error('Failed to register account:', err);
-        });
+        registerNewUser(
+            existingUsername,
+            existingPassword,
+            username,
+            password,
+            fullname,
+            () => {
+                console.log('Account created successfully');
+                navigate('/profile', { state: { username } });
+            },
+            (err) => {
+                console.error('Failed to register account:', err);
+                alert('Registration failed. Please try again.');
+            }
+        );
     };
 
     return (

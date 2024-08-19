@@ -19,7 +19,7 @@ async function getRoster(username, password, onSuccess, onError) {
     });
 
     xmpp.on('online', async () => {
-        console.log(`Connected as ${username}, fetching roster...`);
+        //console.log(`Connected as ${username}, fetching roster...`);
 
         try {
             const contacts = await fetchContacts(xmpp);

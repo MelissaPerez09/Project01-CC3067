@@ -1,17 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import React from 'react';
+import { useLocation } from 'react-router-dom';
 import './UsersInfo.css';
 
 function UserInfo() {
-    const { contactId } = useParams();
-    const [contact, setContact] = useState(null);
+    const location = useLocation();
+    const { contact } = location.state || {};
+
+    if (!contact) {
+        return <div>No contact information available.</div>;
+    }
 
     return (
         <div className="UserInfo">
-            <h2>{contact.username}</h2>
-            <p><strong>Full Name:</strong> {contact.fullname}</p>
-            <p><strong>Contact Since:</strong> {contact.contactSince}</p>
+            <a href="/profile"> 👤 Back to profile</a>
+            <h2>Name contact: <span className="contact-name">{contact.name}</span></h2>
+            
+            <div className="info-box">
+                <p><strong>📩 JID:</strong> {contact.jid}</p>
+            </div>
+            <div className="info-box">
+                <p><strong>🔒 State:</strong> {contact.state}</p>
+            </div>
         </div>
     );
 }

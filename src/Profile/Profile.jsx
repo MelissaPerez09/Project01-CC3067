@@ -6,13 +6,13 @@ import { IoIosChatbubbles } from "react-icons/io"
 import { TbHttpDelete } from "react-icons/tb"
 import { Link, useNavigate } from 'react-router-dom'
 import getRoster from '../backend/getRoster'
-import deleteAccount from '../backend/deleteAccount'
+import deleteAccount from '../backend/deleteAccount'  
 import '../index.css'
 import './Profile.css'
 
 function Profile() {
     const [contacts, setContacts] = useState([]);
-    const [xmppClient, setXmppClient] = useState(null); // Guardar el cliente XMPP
+    const [xmppClient, setXmppClient] = useState(null); 
     const navigate = useNavigate();
 
     // Retrieve stored username and password from localStorage
@@ -27,7 +27,6 @@ function Profile() {
                 console.error('Failed to fetch roster:', error);
             });
 
-            // Guardar la instancia del cliente XMPP para poder detenerla más tarde
             clientPromise.then(client => {
                 setXmppClient(client);
             }).catch(error => {
@@ -41,13 +40,13 @@ function Profile() {
 
     const handleLogout = () => {
         if (xmppClient && xmppClient.stop) {
-            xmppClient.stop().catch(err => console.error("Failed to stop XMPP client:", err)); // Detener el cliente XMPP
+            xmppClient.stop().catch(err => console.error("Failed to stop XMPP client:", err)); 
         } else {
             console.error('XMPP client is not available or does not have a stop method');
         }
-        localStorage.removeItem('xmppUsername'); // Limpiar las credenciales almacenadas
+        localStorage.removeItem('xmppUsername'); 
         localStorage.removeItem('xmppPassword');
-        navigate('/'); // Redirigir a la página de inicio de sesión
+        navigate('/'); 
     };
 
     const handleDeleteAccount = () => {
@@ -55,14 +54,14 @@ function Profile() {
             console.log("Account deleted successfully");
             localStorage.removeItem('xmppUsername');
             localStorage.removeItem('xmppPassword');
-            navigate('/'); // Redirigir a la página de inicio de sesión
+            navigate('/'); 
         }, (error) => {
             console.error("Failed to delete account:", error);
         });
     };
 
-    const handleContactClick = (contactId) => {
-        // Navigate to contact details
+    const handleContactClick = (contact) => {
+        navigate(`/usersinfo/${contact.jid}`, { state: { contact } });
     };
 
     return (
@@ -80,7 +79,7 @@ function Profile() {
                 <h2>Contacts:</h2>
                 <ul>
                     {contacts.map((contact, index) => (
-                        <li key={index} className="contact-card" onClick={() => handleContactClick(contact.jid)}>
+                        <li key={index} className="contact-card" onClick={() => handleContactClick(contact)}>
                             <h3>{contact.name}</h3>
                             <p>{contact.state}</p>
                         </li>

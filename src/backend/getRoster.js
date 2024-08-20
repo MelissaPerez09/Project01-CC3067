@@ -1,6 +1,6 @@
 import { client, xml } from '@xmpp/client';
 
-async function getRoster(username, password, onSuccess, onError) {
+async function getRoster(username, password, onSuccess, onError, onNotification) {
     const xmpp = client({
         service: 'ws://alumchat.lol:7070/ws/',
         domain: 'alumchat.lol',
@@ -38,18 +38,24 @@ async function getRoster(username, password, onSuccess, onError) {
             onError(err);
         }
 
-        // Subscribe to presence updates
+        // Subscribe to presence updates and subscription requests
         xmpp.on('stanza', (stanza) => {
             //console.log('Received stanza:', stanza.toString());
+
             if (stanza.is('presence')) {
-                const from = stanza.attrs.from.split('/')[0]; // JID sin recurso
-                const presenceType = stanza.attrs.type || 'available'; // Tipo de presencia
-                const show = stanza.getChildText('show') || 'online'; // Estado
+                const from = stanza.attrs.from.split('/')[0];
+                const presenceType = stanza.attrs.type || 'available';
+                const show = stanza.getChildText('show') || 'online';
 
-                console.log(`Presence update from ${from}: ${presenceType} - ${show}`);
+                console.log(`Processing presence from ${from} with type: ${presenceType} and show: ${show}`);
 
-                // Actualizar estado en la UI
-                if (presenceType === 'unavailable') {
+                if (presenceType === 'subscribe') {
+                    console.log(`Received subscription request from: ${from}`);
+                    if (onNotification) {
+                        onNotification({ jid: from, type: 'subscribe' });
+                    }
+                } else if (presenceType === 'unavailable') {
+                    console.log(`User ${from} is unavailable.`);
                     onSuccess((prevContacts) =>
                         prevContacts.map((contact) =>
                             contact.jid === from
@@ -58,6 +64,7 @@ async function getRoster(username, password, onSuccess, onError) {
                         )
                     );
                 } else {
+                    console.log(`User ${from} is ${show}.`);
                     onSuccess((prevContacts) =>
                         prevContacts.map((contact) =>
                             contact.jid === from
@@ -68,7 +75,6 @@ async function getRoster(username, password, onSuccess, onError) {
                 }
             }
         });
-
     });
 
     xmpp.start().catch((err) => {
@@ -76,7 +82,7 @@ async function getRoster(username, password, onSuccess, onError) {
         if (onError) onError(err);
     });
 
-    return xmpp; // Retorna la instancia del cliente XMPP
+    return xmpp;
 }
 
 async function fetchContacts(xmppClient) {
@@ -93,15 +99,20 @@ async function fetchContacts(xmppClient) {
             if (stanza.is('iq') && stanza.getChild('query')) {
                 const items = stanza.getChild('query').getChildren('item');
 
-                contacts = items.filter(item => {
+                items.forEach(item => {
                     const subscription = item.attrs.subscription;
-                    return subscription === 'both' || subscription === 'from' || subscription === 'to';
-                }).map(item => ({
-                    jid: item.attrs.jid,
-                    name: item.attrs.name || item.attrs.jid.split('@')[0],
-                    state: "disconnected", // Estado inicial que se actualizará con la presencia
-                    imageUrl: 'http://imgfz.com/i/9gODMzi.png'
-                }));
+                    console.log(`Contact: ${item.attrs.jid}, Subscription: ${subscription}`);
+
+                    // Filtrar contactos solo con suscripción 'both'
+                    if (subscription === 'both') {
+                        contacts.push({
+                            jid: item.attrs.jid,
+                            name: item.attrs.name || item.attrs.jid.split('@')[0],
+                            state: "disconnected",
+                            imageUrl: 'http://imgfz.com/i/9gODMzi.png'
+                        });
+                    }
+                });
 
                 resolve(contacts);
             }

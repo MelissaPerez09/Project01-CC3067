@@ -7,12 +7,14 @@ import { TbHttpDelete } from "react-icons/tb"
 import { Link, useNavigate } from 'react-router-dom'
 import getRoster from '../backend/getRoster'
 import deleteAccount from '../backend/deleteAccount'  
+import { acceptSubscription, rejectSubscription, sendAndAcceptSubscription } from '../backend/manageNotifications'
 import '../index.css'
 import './Profile.css'
 
 function Profile() {
     const [contacts, setContacts] = useState([]);
-    const [xmppClient, setXmppClient] = useState(null); 
+    const [notifications, setNotifications] = useState([]);
+    const [xmppClient, setXmppClient] = useState(null);
     const navigate = useNavigate();
 
     const username = localStorage.getItem('xmppUsername');
@@ -35,18 +37,11 @@ function Profile() {
                         const from = stanza.attrs.from;
                         console.log(`Received subscription request from: ${from}`);
 
-                        // Aceptar automáticamente la solicitud de suscripción
-                        const presenceSubscribed = client.xml('presence', { type: 'subscribed', to: from });
-                        client.send(presenceSubscribed).then(() => {
-                            console.log(`Subscription accepted for: ${from}`);
-
-                            // Opcional: Enviar una solicitud de suscripción de vuelta
-                            const presenceSubscribeBack = client.xml('presence', { type: 'subscribe', to: from });
-                            client.send(presenceSubscribeBack).then(() => {
-                                console.log(`Sent subscription request back to: ${from}`);
-                            }).catch(err => console.error('Failed to send subscription request back:', err));
-
-                        }).catch(err => console.error('Failed to accept subscription:', err));
+                        // Agregar la solicitud de suscripción a las notificaciones
+                        setNotifications(prevNotifications => [
+                            ...prevNotifications,
+                            { jid: from, type: 'subscribe' }
+                        ]);
                     }
                 });
             }).catch(error => {
@@ -54,19 +49,19 @@ function Profile() {
             });
         } else {
             console.error('No user credentials found, redirecting to login');
-            navigate('/'); 
+            navigate('/');
         }
     }, [username, password, navigate]);
 
     const handleLogout = () => {
         if (xmppClient && xmppClient.stop) {
-            xmppClient.stop().catch(err => console.error("Failed to stop XMPP client:", err)); 
+            xmppClient.stop().catch(err => console.error("Failed to stop XMPP client:", err));
         } else {
             console.error('XMPP client is not available or does not have a stop method');
         }
-        localStorage.removeItem('xmppUsername'); 
+        localStorage.removeItem('xmppUsername');
         localStorage.removeItem('xmppPassword');
-        navigate('/'); 
+        navigate('/');
     };
 
     const handleDeleteAccount = () => {
@@ -74,7 +69,7 @@ function Profile() {
             console.log("Account deleted successfully");
             localStorage.removeItem('xmppUsername');
             localStorage.removeItem('xmppPassword');
-            navigate('/'); 
+            navigate('/');
         }, (error) => {
             console.error("Failed to delete account:", error);
         });
@@ -84,15 +79,54 @@ function Profile() {
         navigate(`/usersinfo/${contact.jid}`, { state: { contact } });
     };
 
+    const handleAcceptRequest = (jid) => {
+        if (xmppClient) {
+            acceptSubscription(xmppClient, jid).then(() => {
+                setNotifications(prevNotifications => prevNotifications.filter(n => n.jid !== jid));
+            });
+        }
+    };
+
+    const handleRejectRequest = (jid) => {
+        if (xmppClient) {
+            rejectSubscription(xmppClient, jid).then(() => {
+                setNotifications(prevNotifications => prevNotifications.filter(n => n.jid !== jid));
+            });
+        }
+    };
+
+    const handleSendSubscription = (jid) => {
+        if (xmppClient) {
+            sendAndAcceptSubscription(xmppClient, jid).then(() => {
+                console.log(`Subscription request sent and accepted for ${jid}`);
+            }).catch(err => {
+                console.error(`Failed to send and accept subscription for ${jid}:`, err);
+            });
+        }
+    };
+
     return (
         <div className="Profile">
             <button onClick={handleLogout} className="LogoutButton">
                 <MdLogout />
             </button>
-            
+
             <div className="username">
-                <FaUserCircle size={60} /> 
+                <FaUserCircle size={60} />
                 <h1>{username}</h1>
+            </div>
+
+            <div className="notifications">
+                <h2>Notifications:</h2>
+                <ul>
+                    {notifications.map((notification, index) => (
+                        <li key={index} className="notification-card">
+                            <p>New subscription request from {notification.jid}</p>
+                            <button onClick={() => handleAcceptRequest(notification.jid)}>Accept</button>
+                            <button onClick={() => handleRejectRequest(notification.jid)}>Reject</button>
+                        </li>
+                    ))}
+                </ul>
             </div>
 
             <div className="contacts">

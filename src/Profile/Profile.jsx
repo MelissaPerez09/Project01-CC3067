@@ -15,7 +15,6 @@ function Profile() {
     const [xmppClient, setXmppClient] = useState(null); 
     const navigate = useNavigate();
 
-    // Retrieve stored username and password from localStorage
     const username = localStorage.getItem('xmppUsername');
     const password = localStorage.getItem('xmppPassword');
 
@@ -29,12 +28,33 @@ function Profile() {
 
             clientPromise.then(client => {
                 setXmppClient(client);
+
+                // Manejar solicitudes de suscripción
+                client.on('stanza', (stanza) => {
+                    if (stanza.is('presence') && stanza.attrs.type === 'subscribe') {
+                        const from = stanza.attrs.from;
+                        console.log(`Received subscription request from: ${from}`);
+
+                        // Aceptar automáticamente la solicitud de suscripción
+                        const presenceSubscribed = client.xml('presence', { type: 'subscribed', to: from });
+                        client.send(presenceSubscribed).then(() => {
+                            console.log(`Subscription accepted for: ${from}`);
+
+                            // Opcional: Enviar una solicitud de suscripción de vuelta
+                            const presenceSubscribeBack = client.xml('presence', { type: 'subscribe', to: from });
+                            client.send(presenceSubscribeBack).then(() => {
+                                console.log(`Sent subscription request back to: ${from}`);
+                            }).catch(err => console.error('Failed to send subscription request back:', err));
+
+                        }).catch(err => console.error('Failed to accept subscription:', err));
+                    }
+                });
             }).catch(error => {
                 console.error('Failed to set XMPP client:', error);
             });
         } else {
             console.error('No user credentials found, redirecting to login');
-            navigate('/'); // Redirect to login if credentials are not found
+            navigate('/'); 
         }
     }, [username, password, navigate]);
 

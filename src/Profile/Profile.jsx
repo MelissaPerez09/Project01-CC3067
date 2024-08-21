@@ -4,6 +4,7 @@ import { MdLogout } from "react-icons/md"
 import { IoPersonAdd } from "react-icons/io5"
 import { IoIosChatbubbles } from "react-icons/io"
 import { TbHttpDelete } from "react-icons/tb"
+import { MdGroups } from "react-icons/md";
 import { Link, useNavigate } from 'react-router-dom'
 import getRoster from '../backend/getRoster'
 import deleteAccount from '../backend/deleteAccount'  
@@ -145,6 +146,11 @@ function Profile() {
                 <div className="MenuItem">
                     <Link to="/users">
                         <button className="MenuButton" title="Add Contact"><IoPersonAdd /></button>
+                    </Link>
+                </div>
+                <div className="MenuItem">
+                    <Link to="/groups">
+                        <button className="MenuButton" title="Groups"><MdGroups /></button>
                     </Link>
                 </div>
                 <div className="MenuItem">

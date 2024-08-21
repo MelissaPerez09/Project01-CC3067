@@ -7,7 +7,6 @@ import { sendAndAcceptSubscription } from '../backend/manageNotifications';
 import getRoster from '../backend/getRoster';
 
 function Users() {
-    const [searchTerm, setSearchTerm] = useState('');
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
     const [users, setUsers] = useState(['username1', 'username2', 'username3', 'username4']);
@@ -27,11 +26,7 @@ function Users() {
             console.error('Failed to initialize XMPP client:', error);
         });
     }, []);
-
-    const filteredUsers = users.filter(user =>
-        user.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+    
     const handleAddContact = () => {
         if (email) {
             addContact(email, name, 

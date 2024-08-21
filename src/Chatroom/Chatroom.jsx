@@ -1,14 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Chatroom.css';
+import { sendMessage, receiveMessage } from '../backend/chat';
+import getRoster from '../backend/getRoster';
 
 function Chatroom() {
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
+    const [recipientJid, setRecipientJid] = useState("");
+    const [xmppClient, setXmppClient] = useState(null);
+
+    const username = localStorage.getItem('xmppUsername');
+    const password = localStorage.getItem('xmppPassword');
+
+    useEffect(() => {
+        if (username && password) {
+            const clientPromise = getRoster(
+                username,
+                password,
+                () => {}, // No necesitamos manejar los contactos aquí
+                (error) => {
+                    console.error('Failed to fetch roster:', error);
+                }
+            );
+
+            clientPromise.then(client => {
+                setXmppClient(client);
+                receiveMessage(client, (msg) => {
+                    setMessages(prevMessages => [...prevMessages, msg]);
+                });
+            }).catch(error => {
+                console.error('Failed to set XMPP client:', error);
+            });
+        } else {
+            console.error('No user credentials found, redirecting to login');
+        }
+    }, [username, password]);
 
     const handleSendMessage = () => {
-        if (message.trim()) {
-            setMessages([...messages, { text: message, sender: "Me" }]);
+        if (message.trim() && recipientJid.trim() && xmppClient) {
+            const newMessage = { text: message, sender: "Me" };
+            setMessages([...messages, newMessage]);
+            sendMessage(xmppClient, recipientJid, message);
             setMessage("");
+        } else {
+            console.error('Message or recipient JID is empty, or XMPP client is not initialized');
         }
     };
 
@@ -16,28 +51,17 @@ function Chatroom() {
         <div className="chat">
             <a href="/profile"> 👤 Back to profile</a>
             <div className="chatroom-container">
-                <div className="sidebar">
-                    <h3>Chatroom</h3>
-                    <div className="direct-chats">
-                        <h4>Direct</h4>
-                        <ul>
-                            <li>Contact 1</li>
-                            <li>Contact 2</li>
-                        </ul>
-                    </div>
-                    <div className="group-chats">
-                        <h4>Groups</h4>
-                        <ul>
-                            <li>Group 1</li>
-                            <li>Group 2</li>
-                        </ul>
-                    </div>
-                </div>
                 <div className="chat-area">
                     <div className="chat-header">
                         <div className="contact-info">
                             <div className="contact-avatar"></div>
-                            <h2>Name</h2>
+                            <input 
+                                type="text" 
+                                placeholder="Enter recipient JID..." 
+                                value={recipientJid} 
+                                onChange={(e) => setRecipientJid(e.target.value)} 
+                                className="jid-input"
+                            />
                         </div>
                     </div>
                     <div className="chat-messages">

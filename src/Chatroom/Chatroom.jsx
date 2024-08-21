@@ -27,14 +27,17 @@ function Chatroom() {
                     console.error('Failed to fetch roster:', error);
                 }
             );
-
+    
             clientPromise.then(client => {
                 setXmppClient(client);
+    
+                // Limpia cualquier listener previo antes de agregar uno nuevo
+                client.removeAllListeners('stanza');
+    
                 receiveMessage(client, (msg) => {
                     setMessages(prevMessages => [...prevMessages, msg]);
                 });
-
-                // Obtén la lista de grupos a los que el usuario se ha unido
+    
                 groupFunctions.getGroups(
                     username,
                     password,
@@ -45,14 +48,21 @@ function Chatroom() {
                         console.error('Failed to fetch groups:', error);
                     }
                 );
-
+    
             }).catch(error => {
                 console.error('Failed to set XMPP client:', error);
             });
         } else {
             console.error('No user credentials found, redirecting to login');
         }
-    }, [username, password]);
+    
+        // Cleanup function para evitar duplicados de listeners
+        return () => {
+            if (xmppClient) {
+                xmppClient.removeAllListeners('stanza');
+            }
+        };
+    }, [username, password]);    
 
     const handleSendMessage = () => {
         if (message.trim() && recipientJid.trim() && xmppClient) {

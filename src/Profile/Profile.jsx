@@ -7,8 +7,8 @@ import { TbHttpDelete } from "react-icons/tb"
 import { MdGroups } from "react-icons/md";
 import { Link, useNavigate } from 'react-router-dom'
 import getRoster from '../backend/getRoster'
-import deleteAccount from '../backend/deleteAccount'  
-import { acceptSubscription, rejectSubscription, sendAndAcceptSubscription } from '../backend/manageNotifications'
+import deleteAccount from '../backend/deleteAccount'
+import { acceptSubscription, rejectSubscription } from '../backend/manageNotifications'
 import '../index.css'
 import './Profile.css'
 
@@ -41,8 +41,16 @@ function Profile() {
                         // Agregar la solicitud de suscripción a las notificaciones
                         setNotifications(prevNotifications => [
                             ...prevNotifications,
-                            { jid: from, type: 'subscribe' }
+                            { jid: from, type: 'subscribe', text: `New subscription request from ${from}` }
                         ]);
+                    } else if (stanza.is('message') && stanza.getChild('body')) {
+                        const from = stanza.attrs.from;
+                        const body = stanza.getChildText('body');
+
+                        // Agregar la notificación de nuevo mensaje
+                        setNotifications(prevNotifications => [
+                            ...prevNotifications,
+                            { jid: from, type: 'message', text: `New message from ${from.split('/')[0].split('@')[0]}: ${body}` }                        ]);
                     }
                 });
             }).catch(error => {
@@ -96,16 +104,6 @@ function Profile() {
         }
     };
 
-    const handleSendSubscription = (jid) => {
-        if (xmppClient) {
-            sendAndAcceptSubscription(xmppClient, jid).then(() => {
-                console.log(`Subscription request sent and accepted for ${jid}`);
-            }).catch(err => {
-                console.error(`Failed to send and accept subscription for ${jid}:`, err);
-            });
-        }
-    };
-
     return (
         <div className="Profile">
             <button onClick={handleLogout} className="LogoutButton">
@@ -122,9 +120,15 @@ function Profile() {
                 <ul>
                     {notifications.map((notification, index) => (
                         <li key={index} className="notification-card">
-                            <p>New subscription request from {notification.jid}</p>
-                            <button onClick={() => handleAcceptRequest(notification.jid)}>Accept</button>
-                            <button onClick={() => handleRejectRequest(notification.jid)}>Reject</button>
+                            {notification.type === 'subscribe' ? (
+                                <>
+                                    <p>{notification.text}</p>
+                                    <button onClick={() => handleAcceptRequest(notification.jid)}>Accept</button>
+                                    <button onClick={() => handleRejectRequest(notification.jid)}>Reject</button>
+                                </>
+                            ) : (
+                                <p>{notification.text}</p>
+                            )}
                         </li>
                     ))}
                 </ul>

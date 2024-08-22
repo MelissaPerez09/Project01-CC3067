@@ -36,26 +36,38 @@ export function receiveMessage(xmppClient, onMessageReceived, onNotification = n
 
             let sender;
             if (stanza.attrs.type === 'groupchat') {
-                // Extract the nickname part after '/'
                 sender = from.split('/')[1];
             } else {
-                // For direct messages, extract the bare JID
                 sender = from.split('/')[0];
             }
 
-            // Check if the message is from the current user, if so, ignore it
             if (sender === xmppClient.jid.local) {
                 return;
             }
 
-            const message = {
-                sender: sender || 'Unknown',  // Use the nickname or bare JID
-                text: body
-            };
+            let message;
+            if (body.startsWith('[File:')) {
+                const fileName = body.substring(body.indexOf('[') + 6, body.indexOf(']'));
+                const base64File = body.substring(body.indexOf(']') + 1);
+
+                const link = document.createElement('a');
+                link.href = `data:application/octet-stream;base64,${base64File}`;
+                link.download = fileName;
+                link.innerHTML = `Download: ${fileName}`;
+
+                message = {
+                    sender: sender || 'Unknown',
+                    text: link.outerHTML
+                };
+            } else {
+                message = {
+                    sender: sender || 'Unknown',
+                    text: body
+                };
+            }
 
             onMessageReceived(message);
 
-            // Trigger notification if the tab is hidden
             if (onNotification && document.hidden) {
                 onNotification(`New message from ${message.sender}`);
             }

@@ -12,6 +12,7 @@ function Chatroom() {
     const [groups, setGroups] = useState([]);
     const [isGroupChat, setIsGroupChat] = useState(false);
     const [xmppClient, setXmppClient] = useState(null);
+    const [file, setFile] = useState(null);
 
     const username = localStorage.getItem('xmppUsername');
     const password = localStorage.getItem('xmppPassword');
@@ -28,36 +29,34 @@ function Chatroom() {
                     console.error('Failed to fetch roster:', error);
                 }
             );
-    
+
             clientPromise.then(client => {
                 setXmppClient(client);
-    
-                // Clear previous listeners before adding a new one
+
                 client.removeAllListeners('stanza');
-    
+
                 receiveMessage(client, (msg) => {
                     setMessages(prevMessages => [...prevMessages, msg]);
                 });
-    
+
                 groupFunctions.getGroups(
                     username,
                     password,
                     (groupList) => {
-                        setGroups(groupList); // Store the groups in state
+                        setGroups(groupList);
                     },
                     (error) => {
                         console.error('Failed to fetch groups:', error);
                     }
                 );
-    
+
             }).catch(error => {
                 console.error('Failed to set XMPP client:', error);
             });
         } else {
             console.error('No user credentials found, redirecting to login');
         }
-    
-        // Cleanup function to avoid duplicate listeners
+
         return () => {
             if (xmppClient) {
                 xmppClient.removeAllListeners('stanza');
@@ -66,10 +65,17 @@ function Chatroom() {
     }, [username, password]);
 
     const handleSendMessage = () => {
-        if (message.trim() && recipientJid.trim() && xmppClient) {
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64File = reader.result.split(',')[1];
+                sendBase64Message(base64File, file.name);
+            };
+            reader.readAsDataURL(file);
+        } else if (message.trim() && recipientJid.trim() && xmppClient) {
             const newMessage = { text: message, sender: "Me" };
             setMessages([...messages, newMessage]);
-            
+
             if (isGroupChat) {
                 sendGroupMessage(xmppClient, recipientJid, message);
             } else {
@@ -78,15 +84,39 @@ function Chatroom() {
 
             setMessage("");
         } else {
-            console.error('Message or recipient JID is empty, or XMPP client is not initialized');
+            console.error('Message, file or recipient JID is empty, or XMPP client is not initialized');
         }
+    };
+
+    const sendBase64Message = (base64File, fileName) => {
+        if (recipientJid.trim() && xmppClient) {
+            const newMessage = { text: `[File] ${fileName}`, sender: "Me" };
+            setMessages([...messages, newMessage]);
+
+            const fullMessage = `[File:${fileName}]${base64File}`;
+
+            if (isGroupChat) {
+                sendGroupMessage(xmppClient, recipientJid, fullMessage);
+            } else {
+                sendMessage(xmppClient, recipientJid, fullMessage);
+            }
+
+            setFile(null);
+        } else {
+            console.error('Recipient JID is empty, or XMPP client is not initialized');
+        }
+    };
+
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        setFile(selectedFile);
     };
 
     const handleContactClick = (jid) => {
         setRecipientJid(jid);
         setMessages([]);
         setMessage("");
-        setIsGroupChat(false); // Set to false since it's a direct chat
+        setIsGroupChat(false);
     };
 
     const handleGroupClick = async (jid) => {
@@ -95,7 +125,7 @@ function Chatroom() {
             setRecipientJid(jid);
             setMessages([]);
             setMessage("");
-            setIsGroupChat(true); // Set to true since it's a group chat
+            setIsGroupChat(true);
         } catch (error) {
             console.error('Failed to join group:', error);
         }
@@ -142,7 +172,7 @@ function Chatroom() {
                     <div className="chat-messages">
                         {messages.map((msg, index) => (
                             <div key={index} className="message">
-                                <p><strong>{msg.sender}:</strong> {msg.text}</p>
+                                <p><strong>{msg.sender}:</strong> <span dangerouslySetInnerHTML={{ __html: msg.text }} /></p>
                             </div>
                         ))}
                     </div>
@@ -153,6 +183,10 @@ function Chatroom() {
                             value={message} 
                             onChange={(e) => setMessage(e.target.value)} 
                             onKeyDown={handleKeyDown}
+                        />
+                        <input 
+                            type="file" 
+                            onChange={handleFileChange} 
                         />
                         <button onClick={handleSendMessage}>⬆️</button>
                     </div>

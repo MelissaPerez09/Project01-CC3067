@@ -46,7 +46,14 @@ export function receiveMessage(xmppClient, onMessageReceived, onNotification = n
             }
 
             let message;
-            if (body.startsWith('[File:')) {
+            // Detectar si el mensaje es un enlace de archivo
+            if (body.startsWith('http://') || body.startsWith('https://')) {
+                const fileName = body.split('/').pop();
+                message = {
+                    sender: sender || 'Unknown',
+                    text: `<a href="${body}" download="${fileName}" target="_blank">Download ${fileName}</a>`
+                };
+            } else if (body.startsWith('[File:')) {
                 const fileName = body.substring(body.indexOf('[') + 6, body.indexOf(']'));
                 const base64File = body.substring(body.indexOf(']') + 1);
 

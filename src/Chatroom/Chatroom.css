@@ -71,17 +71,38 @@
 
 .chat-input {
     display: flex;
+    align-items: center;
     padding: 20px;
     border-top: 1px solid #ccc;
     background-color: #fff;
 }
 
-.chat-input input {
+.chat-input input[type="text"] {
     flex-grow: 1;
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
     margin-right: 10px;
+}
+
+.chat-input input[type="file"] {
+    display: none;
+}
+
+.chat-input label {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f0e5c9;
+    color: #6c5ce7;
+    cursor: pointer;
+    margin-right: 10px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.chat-input label:hover {
+    background-color: #e0d5b6;
 }
 
 .chat-input button {
@@ -91,6 +112,11 @@
     background-color: #6c5ce7;
     color: white;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.chat-input button:hover {
+    background-color: #5a4bd7;
 }
 
 .chat {

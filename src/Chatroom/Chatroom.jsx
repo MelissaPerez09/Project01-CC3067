@@ -102,6 +102,7 @@ function Chatroom() {
             }
 
             setFile(null);
+            setMessage(""); // Clear message after sending the file
         } else {
             console.error('Recipient JID is empty, or XMPP client is not initialized');
         }
@@ -110,6 +111,7 @@ function Chatroom() {
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         setFile(selectedFile);
+        setMessage(selectedFile.name);
     };
 
     const handleContactClick = (jid) => {
@@ -117,6 +119,7 @@ function Chatroom() {
         setMessages([]);
         setMessage("");
         setIsGroupChat(false);
+        setFile(null);
     };
 
     const handleGroupClick = async (jid) => {
@@ -126,6 +129,7 @@ function Chatroom() {
             setMessages([]);
             setMessage("");
             setIsGroupChat(true);
+            setFile(null);
         } catch (error) {
             console.error('Failed to join group:', error);
         }
@@ -177,16 +181,19 @@ function Chatroom() {
                         ))}
                     </div>
                     <div className="chat-input">
+                        <label htmlFor="file-upload">📎 File</label>
+                        <input 
+                            type="file" 
+                            id="file-upload" 
+                            onChange={handleFileChange} 
+                        />
                         <input 
                             type="text" 
                             placeholder="Type a message..." 
                             value={message} 
                             onChange={(e) => setMessage(e.target.value)} 
                             onKeyDown={handleKeyDown}
-                        />
-                        <input 
-                            type="file" 
-                            onChange={handleFileChange} 
+                            disabled={!!file}
                         />
                         <button onClick={handleSendMessage}>⬆️</button>
                     </div>

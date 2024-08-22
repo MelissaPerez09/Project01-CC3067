@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Chatroom.css';
-import { sendMessage, receiveMessage } from '../backend/chat';
+import { sendMessage, receiveMessage, sendGroupMessage } from '../backend/chat';
 import getRoster from '../backend/getRoster';
 import groupFunctions from '../backend/groups';
 
@@ -10,6 +10,7 @@ function Chatroom() {
     const [recipientJid, setRecipientJid] = useState("");
     const [contacts, setContacts] = useState([]);
     const [groups, setGroups] = useState([]);
+    const [isGroupChat, setIsGroupChat] = useState(false);
     const [xmppClient, setXmppClient] = useState(null);
 
     const username = localStorage.getItem('xmppUsername');
@@ -31,7 +32,7 @@ function Chatroom() {
             clientPromise.then(client => {
                 setXmppClient(client);
     
-                // Limpia cualquier listener previo antes de agregar uno nuevo
+                // Clear previous listeners before adding a new one
                 client.removeAllListeners('stanza');
     
                 receiveMessage(client, (msg) => {
@@ -42,7 +43,7 @@ function Chatroom() {
                     username,
                     password,
                     (groupList) => {
-                        setGroups(groupList); // Almacena los grupos en el estado
+                        setGroups(groupList); // Store the groups in state
                     },
                     (error) => {
                         console.error('Failed to fetch groups:', error);
@@ -56,19 +57,25 @@ function Chatroom() {
             console.error('No user credentials found, redirecting to login');
         }
     
-        // Cleanup function para evitar duplicados de listeners
+        // Cleanup function to avoid duplicate listeners
         return () => {
             if (xmppClient) {
                 xmppClient.removeAllListeners('stanza');
             }
         };
-    }, [username, password]);    
+    }, [username, password]);
 
     const handleSendMessage = () => {
         if (message.trim() && recipientJid.trim() && xmppClient) {
             const newMessage = { text: message, sender: "Me" };
             setMessages([...messages, newMessage]);
-            sendMessage(xmppClient, recipientJid, message);
+            
+            if (isGroupChat) {
+                sendGroupMessage(xmppClient, recipientJid, message);
+            } else {
+                sendMessage(xmppClient, recipientJid, message);
+            }
+
             setMessage("");
         } else {
             console.error('Message or recipient JID is empty, or XMPP client is not initialized');
@@ -79,12 +86,19 @@ function Chatroom() {
         setRecipientJid(jid);
         setMessages([]);
         setMessage("");
+        setIsGroupChat(false); // Set to false since it's a direct chat
     };
 
-    const handleGroupClick = (jid) => {
-        setRecipientJid(jid);
-        setMessages([]);
-        setMessage("");
+    const handleGroupClick = async (jid) => {
+        try {
+            await groupFunctions.joinRoom(xmppClient, jid);
+            setRecipientJid(jid);
+            setMessages([]);
+            setMessage("");
+            setIsGroupChat(true); // Set to true since it's a group chat
+        } catch (error) {
+            console.error('Failed to join group:', error);
+        }
     };
 
     const handleKeyDown = (e) => {

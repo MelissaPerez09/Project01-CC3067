@@ -31,16 +31,31 @@ export function sendGroupMessage(xmppClient, roomJid, message) {
 export function receiveMessage(xmppClient, onMessageReceived, onNotification = null) {
     xmppClient.on('stanza', (stanza) => {
         if (stanza.is('message') && stanza.getChild('body')) {
-            const from = stanza.attrs.from.split('/')[0];
+            const from = stanza.attrs.from; 
             const body = stanza.getChildText('body');
 
+            let sender;
+            if (stanza.attrs.type === 'groupchat') {
+                // Extract the nickname part after '/'
+                sender = from.split('/')[1];
+            } else {
+                // For direct messages, extract the bare JID
+                sender = from.split('/')[0];
+            }
+
+            // Check if the message is from the current user, if so, ignore it
+            if (sender === xmppClient.jid.local) {
+                return;
+            }
+
             const message = {
-                sender: from,
+                sender: sender || 'Unknown',  // Use the nickname or bare JID
                 text: body
             };
+
             onMessageReceived(message);
 
-            // Verifica si se debe activar una notificación
+            // Trigger notification if the tab is hidden
             if (onNotification && document.hidden) {
                 onNotification(`New message from ${message.sender}`);
             }

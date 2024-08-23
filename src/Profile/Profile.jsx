@@ -153,8 +153,8 @@ function Profile() {
                     </Link>
                 </div>
                 <div className="MenuItem">
-                    <Link to="/groups">
-                        <button className="MenuButton" title="Groups"><MdGroups /></button>
+                    <Link to="/create-group">
+                        <button className="MenuButton" title="Create group"><MdGroups /></button>
                     </Link>
                 </div>
                 <div className="MenuItem">

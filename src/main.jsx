@@ -7,7 +7,7 @@ import Profile from './Profile/Profile.jsx'
 import Users from './Users/Users.jsx'
 import UsersInfo from './UsersInfo/UsersInfo.jsx'
 import Chatroom from './Chatroom/Chatroom.jsx'
-import Groups from './Groups/Groups.jsx'
+import CreateGroup from './Groups/CreateGroup.jsx'
 import './Login/Login.css'
 import './SignUp/SignUp.css'
 import './Profile/Profile.css'
@@ -25,7 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/users" element={<Users />} />
         <Route path="/usersinfo/:contactId" element={<UsersInfo />} />
         <Route path="/chat-room" element={<Chatroom />} />
-        <Route path="/groups" element={<Groups />} />
+        <Route path="/create-group" element={<CreateGroup />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>,

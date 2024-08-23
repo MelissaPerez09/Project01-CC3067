@@ -1,17 +1,23 @@
+/*
+    manageNotifications.js
+    Handle subscription requests and presence notifications from 1-1 conversations.
+*/
+
 import { xml } from '@xmpp/client';
 
+// Send a subscription request and automatically accept the subscription
 export function sendAndAcceptSubscription(xmppClient, jid) {
     const presenceSubscribe = xml('presence', { type: 'subscribe', to: jid });
     const presenceSubscribed = xml('presence', { type: 'subscribed', to: jid });
 
+    // Send subscription request to a contact
     return xmppClient.send(presenceSubscribe)
         .then(() => {
             console.log(`Subscription request sent to ${jid}`);
             return xmppClient.send(presenceSubscribed);
         })
         .then(() => {
-            console.log(`Subscription automatically accepted for ${jid}`);
-            // Enviar presencia disponible
+            //console.log(`Subscription automatically accepted for ${jid}`);
             const presenceAvailable = xml('presence', { to: jid });
             return xmppClient.send(presenceAvailable);
         })
@@ -23,14 +29,15 @@ export function sendAndAcceptSubscription(xmppClient, jid) {
         });
 }
 
+// Accept a subscription request
 export function acceptSubscription(xmppClient, jid) {
     const presenceSubscribed = xml('presence', { type: 'subscribed', to: jid });
-    const presenceAvailable = xml('presence', { to: jid }); // Presencia disponible
+    const presenceAvailable = xml('presence', { to: jid });
 
+    // Send subscription request accepted and available presence
     return xmppClient.send(presenceSubscribed)
         .then(() => {
             console.log(`Subscription accepted for: ${jid}`);
-            // Enviar presencia después de aceptar
             return xmppClient.send(presenceAvailable);
         })
         .catch(err => {
@@ -38,6 +45,7 @@ export function acceptSubscription(xmppClient, jid) {
         });
 }
 
+// Reject a subscription request
 export function rejectSubscription(xmppClient, jid) {
     const presenceUnsubscribed = xml('presence', { type: 'unsubscribed', to: jid });
     return xmppClient.send(presenceUnsubscribed)

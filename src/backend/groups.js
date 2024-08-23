@@ -1,18 +1,16 @@
-import { client, xml } from '@xmpp/client';
+/*
+    groups.js
+    Retrieve and manage group chats from the XMPP server.
+*/
 
+import { xml } from '@xmpp/client';
+import connect from './connect';
+
+// Retrieve the user's groups
 async function getGroups(username, password, onSuccess, onError) {
-    const xmpp = client({
-        service: 'ws://alumchat.lol:7070/ws/',
-        domain: 'conference.alumchat.lol',
-        resource: '',
-        username: `${username}`,
-        password: password,
-    });
+    const xmpp = connect(username, password, onSuccess, onError);
 
-    xmpp.on('status', (status) => {
-        console.log('Status:', status);
-    });
-
+    // Handle errors
     xmpp.on('error', (err) => {
         console.error('Failed to retrieve groups:', err);
         if (onError) onError(err);
@@ -23,7 +21,7 @@ async function getGroups(username, password, onSuccess, onError) {
 
         try {
             const groups = await fetchGroups(xmpp);
-            onSuccess(groups, xmpp); // Pasa xmppClient al onSuccess
+            onSuccess(groups, xmpp);
         } catch (err) {
             console.error('Failed to retrieve groups:', err);
             if (onError) onError(err);
@@ -38,6 +36,7 @@ async function getGroups(username, password, onSuccess, onError) {
     return xmpp;
 }
 
+// Fetch the groups
 async function fetchGroups(xmppClient) {
     return new Promise((resolve, reject) => {
         const discoIq = xml(
@@ -70,6 +69,7 @@ async function fetchGroups(xmppClient) {
     });
 }
 
+// Join a group chat
 async function joinRoom(xmppClient, roomJid) {
     return new Promise((resolve, reject) => {
         const localJid = xmppClient.jid && xmppClient.jid.local ? xmppClient.jid.local : null;
@@ -84,6 +84,7 @@ async function joinRoom(xmppClient, roomJid) {
             xml('x', { xmlns: 'http://jabber.org/protocol/muc' })
         );
 
+        // Send the presence stanza to join the group
         xmppClient.send(presence).then(() => {
             console.log(`Joined group ${roomJid}`);
             resolve();
@@ -94,10 +95,11 @@ async function joinRoom(xmppClient, roomJid) {
     });
 }
 
+// Create a group chat
 export async function createGroup(xmppClient, roomName, nickname) {
-    const roomJid = `${roomName}@conference.alumchat.lol`;  // Ajusta el dominio según tu servidor XMPP
+    const roomJid = `${roomName}@conference.alumchat.lol`;
 
-    // Paso 1: Enviar presencia inicial para crear la sala
+    // Prescence stanza to create the room
     const presenceStanza = xml(
         'presence',
         { to: `${roomJid}/${nickname}` },
@@ -110,7 +112,7 @@ export async function createGroup(xmppClient, roomName, nickname) {
         console.error(`Failed to send presence to create room ${roomJid}:`, err);
     });
 
-    // Paso 2: Configurar la sala para que se cree instantáneamente y sea persistente
+    // IQ stanza to configure the room
     const iqStanza = xml(
         'iq',
         { type: 'set', to: roomJid },
@@ -119,20 +121,23 @@ export async function createGroup(xmppClient, roomName, nickname) {
                 xml('field', { var: 'FORM_TYPE', type: 'hidden' },
                     xml('value', {}, 'http://jabber.org/protocol/muc#roomconfig')
                 ),
-                xml('field', { var: 'muc#roomconfig_persistentroom' },  // Configurar como sala persistente
+                // Configure the room settings
+                xml('field', { var: 'muc#roomconfig_persistentroom' },
                     xml('value', {}, '1')
                 ),
-                xml('field', { var: 'muc#roomconfig_publicroom' },  // Hacer la sala pública
+                // Make the room public
+                xml('field', { var: 'muc#roomconfig_publicroom' },
                     xml('value', {}, '1')
                 )
             )
         )
     );
 
+    // Send the IQ stanza to create the room
     return new Promise((resolve, reject) => {
         xmppClient.send(iqStanza).then(() => {
             console.log(`Room ${roomJid} created successfully`);
-            resolve(roomJid);  // Devuelve el JID de la sala creada
+            resolve(roomJid);
         }).catch(err => {
             console.error(`Failed to create room ${roomJid}:`, err);
             reject(err);

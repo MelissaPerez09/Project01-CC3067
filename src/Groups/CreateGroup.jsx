@@ -1,16 +1,21 @@
+/*
+    CreateGroup.jsx
+    Manages creating a new group chat.
+*/
+
 import { useState, useEffect } from 'react';
-import groupFunctions, { createGroup } from '../backend/groups'; // Importamos createGroup
+import groupFunctions, { createGroup } from '../backend/groups';
 import '../index.css';
-import { Navigate } from 'react-router-dom';
 
 function CreateGroup() {
     const [groups, setGroups] = useState([]);
     const [xmppClient, setXmppClient] = useState(null);
-    const [groupName, setGroupName] = useState(''); // Nuevo estado para el nombre del grupo
-    const [nickname, setNickname] = useState(''); // Nuevo estado para el apodo
+    const [groupName, setGroupName] = useState('');
+    const [nickname, setNickname] = useState('');
     const username = localStorage.getItem('xmppUsername');
     const password = localStorage.getItem('xmppPassword');
 
+    // Fetch the user's groups
     useEffect(() => {
         if (username && password) {
             groupFunctions.getGroups(
@@ -29,6 +34,7 @@ function CreateGroup() {
         }
     }, [username, password]);
 
+    // Handle creating a new group
     const handleCreateGroup = async () => {
         if (!groupName || !nickname) {
             alert("Group name and nickname are required");

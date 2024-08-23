@@ -1,16 +1,22 @@
-import { client, xml } from '@xmpp/client';
+/*
+    connect.js
+    Connect to the XMPP server using the user's credentials.
+*/
+
+import { client } from '@xmpp/client';
 
 function connectXMPP(username, password) {
+    // Client configuration
     const xmpp = client({
         service: 'ws://alumchat.lol:7070/ws/',
         domain: 'alumchat.lol',
         resource: '',
-        username: username,
+        username: `${username}`,
         password: password,
     });
 
     xmpp.on('online', async (address) => {
-        console.log(`connected to alumchat.lol as ${address.toString()}`);
+        console.log(`connected as ${address.toString()}`);
     });
 
     xmpp.on('error', (err) => {

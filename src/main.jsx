@@ -1,3 +1,8 @@
+/*
+  main.jsx
+  Main entry point for the application. Manages routing and rendering of components.
+*/
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'

@@ -1,3 +1,11 @@
+/*
+    Profile.jsx
+    Manages the profile page, including:
+        - displaying contacts and notifications
+        - handling logout, account deletion, adding contacts, creating groups
+        - navigating to the chat room
+*/
+
 import { useEffect, useState } from 'react'
 import { FaUserCircle } from "react-icons/fa"
 import { MdLogout } from "react-icons/md"
@@ -21,6 +29,7 @@ function Profile() {
     const username = localStorage.getItem('xmppUsername');
     const password = localStorage.getItem('xmppPassword');
 
+    // Fetch the user's roster and set up the XMPP client
     useEffect(() => {
         if (username && password) {
             const clientPromise = getRoster(username, password, (roster) => {
@@ -32,13 +41,13 @@ function Profile() {
             clientPromise.then(client => {
                 setXmppClient(client);
 
-                // Manejar solicitudes de suscripción
+                // Monitor incoming presence and message stanzas
                 client.on('stanza', (stanza) => {
                     if (stanza.is('presence') && stanza.attrs.type === 'subscribe') {
                         const from = stanza.attrs.from;
                         console.log(`Received subscription request from: ${from}`);
 
-                        // Agregar la solicitud de suscripción a las notificaciones
+                        // Add a notification for the new subscription request
                         setNotifications(prevNotifications => [
                             ...prevNotifications,
                             { jid: from, type: 'subscribe', text: `New subscription request from ${from}` }
@@ -47,7 +56,7 @@ function Profile() {
                         const from = stanza.attrs.from;
                         const body = stanza.getChildText('body');
 
-                        // Agregar la notificación de nuevo mensaje
+                        // Notification for new messages
                         setNotifications(prevNotifications => [
                             ...prevNotifications,
                             { jid: from, type: 'message', text: `New message from ${from.split('/')[0].split('@')[0]}: ${body}` }                        ]);
@@ -62,6 +71,7 @@ function Profile() {
         }
     }, [username, password, navigate]);
 
+    // Handle logout
     const handleLogout = () => {
         if (xmppClient && xmppClient.stop) {
             xmppClient.stop().catch(err => console.error("Failed to stop XMPP client:", err));
@@ -73,6 +83,7 @@ function Profile() {
         navigate('/');
     };
 
+    // Handle account deletion
     const handleDeleteAccount = () => {
         deleteAccount(() => {
             console.log("Account deleted successfully");
@@ -84,10 +95,12 @@ function Profile() {
         });
     };
 
+    // Handle contact click to naviate to the user's info page
     const handleContactClick = (contact) => {
         navigate(`/usersinfo/${contact.jid}`, { state: { contact } });
     };
 
+    // Handle subscription request
     const handleAcceptRequest = (jid) => {
         if (xmppClient) {
             acceptSubscription(xmppClient, jid).then(() => {
@@ -96,6 +109,7 @@ function Profile() {
         }
     };
 
+    // Handle subscription rejection
     const handleRejectRequest = (jid) => {
         if (xmppClient) {
             rejectSubscription(xmppClient, jid).then(() => {

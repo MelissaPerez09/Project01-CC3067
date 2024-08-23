@@ -1,27 +1,28 @@
-import { client, xml } from '@xmpp/client';
+/*
+    addUser.js
+    Add a contact to the user's roster and send a subscription request.
+*/
+
+import { xml } from '@xmpp/client';
+import connect from './connect';
 
 async function addContact(email, name, onSuccess, onError) {
     // Retrieve the username and password from localStorage
     const username = localStorage.getItem('xmppUsername');
     const password = localStorage.getItem('xmppPassword');
+    const xmpp = connect(username, password);
 
+    // Check if the user credentials are available
     if (!username || !password) {
         return onError("User credentials not found.");
     }
-
-    const xmpp = client({
-        service: 'ws://alumchat.lol:7070/ws/',
-        domain: 'alumchat.lol',
-        resource: '',
-        username: `${username}`,
-        password: password,
-    });
 
     xmpp.on('error', (err) => {
         console.error('Failed to add contact:', err);
         if (onError) onError(err);
     });
 
+    // Add the contact to the roster and send a subscription request
     xmpp.on('online', async () => {
         console.log(`Connected as ${username}, adding contact...`);
 
@@ -52,7 +53,7 @@ async function addContact(email, name, onSuccess, onError) {
             if (onError) onError(err);
         }
 
-        xmpp.stop(); // Disconnect after adding the contact and sending the subscription
+        xmpp.stop();
     });
 
     xmpp.start().catch((err) => {

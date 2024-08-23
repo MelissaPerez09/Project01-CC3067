@@ -1,3 +1,8 @@
+/*
+    register.js
+    Register a new user account on the XMPP server.
+*/
+
 import { client, xml } from '@xmpp/client';
 
 function registerNewUser(existingUsername, existingPassword, newUsername, newPassword, fullname, onSuccess, onError) {
@@ -10,7 +15,7 @@ function registerNewUser(existingUsername, existingPassword, newUsername, newPas
     });
 
     xmpp.on('status', (status) => {
-        console.log('Status:', status);
+        //console.log('Status:', status);
     });
 
     xmpp.on('error', (err) => {
@@ -41,7 +46,7 @@ function registerNewUser(existingUsername, existingPassword, newUsername, newPas
             if (onError) onError(err);
         }
 
-        xmpp.stop(); // Disconnect after registration
+        xmpp.stop();
     });
 
     xmpp.start().catch((err) => {

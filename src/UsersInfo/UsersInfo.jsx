@@ -1,3 +1,8 @@
+/*
+    UsersInfo.jsx
+    Manages the user information page, including displaying user details.
+*/
+
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import './UsersInfo.css';

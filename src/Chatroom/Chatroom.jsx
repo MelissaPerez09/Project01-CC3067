@@ -1,3 +1,8 @@
+/*
+    Chatroom.jsx
+    Manages the chatroom page, including sending and receiving messages, and displaying contacts and groups.
+*/
+
 import React, { useState, useEffect } from 'react';
 import './Chatroom.css';
 import { sendMessage, receiveMessage, sendGroupMessage } from '../backend/chat';

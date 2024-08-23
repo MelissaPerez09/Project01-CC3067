@@ -1,21 +1,22 @@
-import { client, xml } from '@xmpp/client';
+/*
+    deleteAccount.js
+    Delete the user's account from the XMPP server.
+*/
+
+import { xml } from '@xmpp/client';
+import connect from './connect';
 
 async function deleteAccount(onSuccess, onError) {
     const username = localStorage.getItem('xmppUsername');
     const password = localStorage.getItem('xmppPassword');
+    const xmpp = connect(username, password);
 
+    // Check if the user credentials are available
     if (!username || !password) {
         return onError("User credentials not found.");
     }
 
-    const xmpp = client({
-        service: 'ws://alumchat.lol:7070/ws/',
-        domain: 'alumchat.lol',
-        resource: '',
-        username: `${username}`,
-        password: password,
-    });
-
+    // Handle errors
     xmpp.on('error', (err) => {
         console.error('Failed to delete account:', err);
         if (onError) onError(err);

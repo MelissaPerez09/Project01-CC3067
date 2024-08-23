@@ -1,3 +1,8 @@
+/*
+    Users.jsx
+    Manages the add contact page, including adding a new contact.
+*/
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../index.css';
@@ -16,7 +21,7 @@ function Users() {
     const username = localStorage.getItem('xmppUsername');
     const password = localStorage.getItem('xmppPassword');
 
-    // Obtén el cliente XMPP cuando el componente se monta
+    // Initialize the XMPP client
     useState(() => {
         getRoster(username, password, () => {}, (error) => {
             console.error('Failed to fetch XMPP client:', error);
@@ -27,6 +32,7 @@ function Users() {
         });
     }, []);
     
+    // Handle adding a new contact
     const handleAddContact = () => {
         if (email) {
             addContact(email, name, 

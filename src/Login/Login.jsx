@@ -1,3 +1,8 @@
+/*
+  Login.jsx
+  Manages the login page, including connecting to the XMPP server.
+*/
+
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import plainLogo from '../assets/logo.png'
@@ -24,11 +29,6 @@ function Login() {
 
         // Navigate to the profile page
         navigate('/profile'); 
-    });
-
-    xmpp.on('stanza', (msg) => {
-        console.log('Message received:', msg);
-        // Handle incoming messages here
     });
 
     if (xmpp.status !== 'online' && xmpp.status !== 'connecting') {

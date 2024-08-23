@@ -1,3 +1,8 @@
+/*
+    SignUp.jsx
+    Manages the sign-up page, including creating a new account.
+*/
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import plainLogo from '../assets/logo1.png';
@@ -11,9 +16,12 @@ function SignUp() {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
+    // Handle submitting the sign-up form
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        // Usages existing password and username to create a new account
+        // This is for authentication purposes
         const existingUsername = 'per21385';
         const existingPassword = '12345';
 

@@ -39,3 +39,7 @@ $ yarn dev
 After following the installation steps, the application will be running locally. You can interact with the XMPP server to perform various messaging operations such as sending messages, managing contacts, and participating in group chats.
 
 To register a new account or log in, use the provided forms in the application interface. All interactions with the XMPP server will be managed in real-time through the web client.
+
+## Presentation
+You can [click here](https://www.canva.com/design/DAGPErBQLY8/IdaFDKoU8O4DIXOuINhYkA/view?utm_content=DAGPErBQLY8&utm_campaign=designshare&utm_medium=link&utm_source=editor) to watch the presentation that includes a description about implemented features, challenges, lessons learned and a reflection about the project.
+
